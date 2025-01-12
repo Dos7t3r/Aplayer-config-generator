@@ -15,3 +15,4 @@ Allow users to fill in the information related to music playback through the gra
 
 ## See detailed information 👉 https://blog.iambzy.com/p/4107 👈
 ## online Demo at 👉 https://blog.iambzy.com/Aplayer-generator 👈
+tip: If Chinese is hard for your to understand, you can change the language in the lower right corner :3
