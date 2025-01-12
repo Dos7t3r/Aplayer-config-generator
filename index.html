@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Aplayer Config Generator</title>
+
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-2xl p-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-blue-400">APlayer 嵌入代码生成器v2.1</h1>
+        
+        <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="songName" class="block text-sm font-medium mb-1 text-gray-300">歌曲名称 / Song Name</label>
+                    <input type="text" id="songName" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                </div>
+                <div>
+                    <label for="artist" class="block text-sm font-medium mb-1 text-gray-300">艺术家 / Artist</label>
+                    <input type="text" id="artist" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                </div>
+            </div>
+            
+            <div>
+                <label for="mp3Url" class="block text-sm font-medium mb-1 text-gray-300">MP3 URL</label>
+                <input type="text" id="mp3Url" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+            </div>
+            
+            <div>
+                <label for="coverUrl" class="block text-sm font-medium mb-1 text-gray-300">封面图片 URL / Cover URL</label>
+                <input type="text" id="coverUrl" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-300">歌词类型 / Lyric Type</label>
+                <div class="flex space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="lrcType" value="url" checked class="form-radio text-blue-500">
+                        <span class="ml-2 text-gray-300">URL</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="lrcType" value="text" class="form-radio text-blue-500">
+                        <span class="ml-2 text-gray-300">手动输入 / Input manually</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div id="lrcUrlContainer">
+                <label for="lrcUrl" class="block text-sm font-medium mb-1 text-gray-300">歌词 URL</label>
+                <input type="text" id="lrcUrl" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+            </div>
+            
+            <div id="lrcTextContainer" class="hidden">
+                <label for="lrcText" class="block text-sm font-medium mb-1 text-gray-300">歌词内容 / Lyric Contents</label>
+                <textarea id="lrcText" rows="5" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"></textarea>
+            </div>
+            
+            <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                </svg>
+                生成并复制嵌入代码 / Generate & Copy
+            </button>
+            
+            <div id="lrcCorrectionInfo" class="hidden text-center text-green-400 mt-2"></div>
+            
+            <div id="embedCodeContainer" class="hidden">
+                <label for="embedCode" class="block text-sm font-medium mb-1 text-gray-300">嵌入代码 / embed code</label>
+                <textarea id="embedCode" rows="10" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white font-mono text-sm" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const lrcTypeRadios = document.querySelectorAll('input[name="lrcType"]');
+        const lrcUrlContainer = document.getElementById('lrcUrlContainer');
+        const lrcTextContainer = document.getElementById('lrcTextContainer');
+        const generateBtn = document.getElementById('generateBtn');
+        const embedCodeContainer = document.getElementById('embedCodeContainer');
+        const embedCodeTextarea = document.getElementById('embedCode');
+        const lrcCorrectionInfo = document.getElementById('lrcCorrectionInfo');
+
+        lrcTypeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'url') {
+                    lrcUrlContainer.classList.remove('hidden');
+                    lrcTextContainer.classList.add('hidden');
+                } else {
+                    lrcUrlContainer.classList.add('hidden');
+                    lrcTextContainer.classList.remove('hidden');
+                }
+            });
+        });
+
+        generateBtn.addEventListener('click', () => {
+            const songName = document.getElementById('songName').value;
+            const artist = document.getElementById('artist').value;
+            const mp3Url = document.getElementById('mp3Url').value;
+            const coverUrl = document.getElementById('coverUrl').value;
+            const lrcType = document.querySelector('input[name="lrcType"]:checked').value;
+            const lrcContent = lrcType === 'url' ? document.getElementById('lrcUrl').value : document.getElementById('lrcText').value;
+
+            if (songName && artist && mp3Url && coverUrl && (lrcType === 'url' ? lrcContent : true)) {
+                const lrcTypeNumber = lrcType === 'url' ? 3 : 1;
+                let lrcValue, correctionCount;
+                if (lrcType === 'url') {
+                    lrcValue = lrcContent;
+                    correctionCount = 0;
+                } else {
+                    [lrcValue, correctionCount] = validateAndCorrectLRC(lrcContent);
+                }
+                
+                const code = `<meta charset="UTF-8">
+<div id="aplayer"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+<script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"><\/script>
+<script>
+  // 初始化播放器
+  const ap = new APlayer({
+    container: document.getElementById('aplayer'), // 播放器容器
+    audio: [
+      {
+        name: '${songName}', // 歌曲名称
+        artist: '${artist}', // 艺术家名称
+        url: '${mp3Url}', // MP3 文件的 URL
+        cover: '${coverUrl}', // 封面图片的 URL
+        lrc: \`${lrcValue}\` // 嵌入式歌词内容
+      }
+    ],
+    lrcType: ${lrcTypeNumber} // LRC 歌词支持 (0: 关闭, 1: 内嵌, 3: 外链)，根据用户选择
+  });
+<\/script>`;
+                
+                embedCodeTextarea.value = code;
+                embedCodeContainer.classList.remove('hidden');
+                
+                if (correctionCount > 0) {
+                    lrcCorrectionInfo.textContent = `已为您修复 ${correctionCount} 处时间戳错误 / Fixed timestamp error at ${correctionCount} for you`;
+                    lrcCorrectionInfo.classList.remove('hidden');
+                } else {
+                    lrcCorrectionInfo.classList.add('hidden');
+                }
+                
+                navigator.clipboard.writeText(code).then(() => {
+                    alert('嵌入代码已复制到剪贴板 / Copied!');
+                }, (err) => {
+                    console.error('无法复制文本 / Unable to Copy: ', err);
+                    alert('无法自动复制代码，请手动复制嵌入代码 / Unable to copy the code automatically, copy the embedded code manually');
+                });
+            } else {
+                alert('请填写所有必要的字段 / Please fill in all necessary fields');
+            }
+        });
+
+        function validateAndCorrectLRC(lrcContent) {
+            const lines = lrcContent.split('\n');
+            let correctionCount = 0;
+            const correctedLines = lines.map(line => {
+                const match = line.match(/^\[(\d{2}):(\d{2})\.(\d{1,4})\]/);
+                if (match) {
+                    const [, minutes, seconds, milliseconds] = match;
+                    const correctedMs = milliseconds.padEnd(2, '0').slice(0, 2);
+                    if (correctedMs !== milliseconds) {
+                        correctionCount++;
+                    }
+                    return `[${minutes}:${seconds}.${correctedMs}]${line.slice(match[0].length)}`;
+                }
+                return line;
+            });
+            
+            // Add the timestamp at the beginning
+            correctedLines.unshift('[00:00.01]By Dos7t3r | 417.red');
+            correctionCount++; // Count the added line as a correction
+            
+            return [correctedLines.join('\n'), correctionCount];
+        }
+    </script>
