@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<title>Aplayer Config Generator</title>
-
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APlayer 嵌入代码生成器v3.21</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Toastr CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
         body {
@@ -14,174 +14,352 @@
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-2xl p-8">
-        <h1 class="text-3xl font-bold text-center mb-8 text-blue-400">APlayer 嵌入代码生成器v2.1</h1>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4">
+    <div class="max-w-2xl mx-auto bg-gray-800 rounded-xl shadow-2xl p-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-blue-400">APlayer 嵌入代码生成器v3.21</h1>
         
-        <div class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label for="songName" class="block text-sm font-medium mb-1 text-gray-300">歌曲名称 / Song Name</label>
-                    <input type="text" id="songName" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
-                </div>
-                <div>
-                    <label for="artist" class="block text-sm font-medium mb-1 text-gray-300">艺术家 / Artist</label>
-                    <input type="text" id="artist" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
-                </div>
-            </div>
-            
-            <div>
-                <label for="mp3Url" class="block text-sm font-medium mb-1 text-gray-300">MP3 URL</label>
-                <input type="text" id="mp3Url" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
-            </div>
-            
-            <div>
-                <label for="coverUrl" class="block text-sm font-medium mb-1 text-gray-300">封面图片 URL / Cover URL</label>
-                <input type="text" id="coverUrl" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium mb-2 text-gray-300">歌词类型 / Lyric Type</label>
-                <div class="flex space-x-4">
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="lrcType" value="url" checked class="form-radio text-blue-500">
-                        <span class="ml-2 text-gray-300">URL</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="lrcType" value="text" class="form-radio text-blue-500">
-                        <span class="ml-2 text-gray-300">手动输入 / Input manually</span>
-                    </label>
-                </div>
-            </div>
-            
-            <div id="lrcUrlContainer">
-                <label for="lrcUrl" class="block text-sm font-medium mb-1 text-gray-300">歌词 URL</label>
-                <input type="text" id="lrcUrl" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
-            </div>
-            
-            <div id="lrcTextContainer" class="hidden">
-                <label for="lrcText" class="block text-sm font-medium mb-1 text-gray-300">歌词内容 / Lyric Contents</label>
-                <textarea id="lrcText" rows="5" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"></textarea>
-            </div>
-            
-            <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
-                </svg>
-                生成并复制嵌入代码 / Generate & Copy
+        <!-- 播放器列表容器 -->
+        <div id="players-container"></div>
+
+        <!-- 新增：添加播放器按钮放置区域 -->
+        <div class="flex justify-end mb-8">
+            <button id="add-player" class="bg-red-500 hover:bg-red-600 text-white font-bold h-10 w-10 rounded-full border border-red-600 flex items-center justify-center">
+                +
             </button>
-            
-            <div id="lrcCorrectionInfo" class="hidden text-center text-green-400 mt-2"></div>
-            
-            <div id="embedCodeContainer" class="hidden">
-                <label for="embedCode" class="block text-sm font-medium mb-1 text-gray-300">嵌入代码 / embed code</label>
-                <textarea id="embedCode" rows="10" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white font-mono text-sm" readonly></textarea>
-            </div>
         </div>
+
+        <div class="mb-4">
+            <label for="cdn-source" class="block text-sm font-medium mb-1 text-gray-300">CDN 源 / CDN Source</label>
+            <select id="cdn-source" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                <option value="jsdelivr">jsDelivr</option>
+                <option value="cdnjs">cdnjs</option>
+                <option value="unpkg">unpkg</option>
+                <option value="custom">自定义 / Custom</option>
+            </select>
+        </div>
+
+        <div id="custom-cdn-container" class="mb-4 hidden">
+            <label for="custom-cdn" class="block text-sm font-medium mb-1 text-gray-300">自定义 CDN URL / Custom CDN URL</label>
+            <input type="text" id="custom-cdn" placeholder="https://example.com/path/to/aplayer" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+        </div>
+
+        <button id="generate-code" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4 flex items-center justify-center">
+            <!-- 齿轮图标 -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.963a1 1 0 00.95.69h4.164c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.286 3.963c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.176 0l-3.37 2.448c-.785.57-1.838-.197-1.54-1.118l1.286-3.963a1 1 0 00-.364-1.118L2.318 9.39c-.783-.57-.38-1.81.588-1.81h4.164a1 1 0 00.95-.69l1.286-3.963z" />
+            </svg>
+            生成嵌入代码 / Generate Embed Code
+        </button>
+
+        <div id="embed-code-container" class="mb-4 hidden">
+            <label for="embed-code" class="block text-sm font-medium mb-1 text-gray-300">嵌入代码 / Embed Code</label>
+            <textarea id="embed-code" rows="10" class="w-full px-3 py-2 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white font-mono text-sm" readonly></textarea>
+        </div>
+
+        <button id="copy-code" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded hidden flex items-center justify-center">
+            <!-- 粘贴板图标 -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3M16 3H8a2 2 0 00-2 2v4a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2z" />
+            </svg>
+            复制嵌入代码 / Copy Embed Code
+        </button>
     </div>
 
+    <!-- 引入 jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 引入 Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
-        const lrcTypeRadios = document.querySelectorAll('input[name="lrcType"]');
-        const lrcUrlContainer = document.getElementById('lrcUrlContainer');
-        const lrcTextContainer = document.getElementById('lrcTextContainer');
-        const generateBtn = document.getElementById('generateBtn');
-        const embedCodeContainer = document.getElementById('embedCodeContainer');
-        const embedCodeTextarea = document.getElementById('embedCode');
-        const lrcCorrectionInfo = document.getElementById('lrcCorrectionInfo');
+        // Toastr 配置
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
 
-        lrcTypeRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                if (e.target.value === 'url') {
-                    lrcUrlContainer.classList.remove('hidden');
-                    lrcTextContainer.classList.add('hidden');
-                } else {
-                    lrcUrlContainer.classList.add('hidden');
-                    lrcTextContainer.classList.remove('hidden');
+        let players = [{ id: 'aplayer1', songName: '', artist: '', mp3Url: '', coverUrl: '', lrcType: 'url', lrcContent: '' }];
+
+        function createPlayerHTML(player, index) {
+            return `
+                <div class="mb-8 p-6 bg-gray-700 rounded-lg relative" data-player-id="${player.id}">
+                    <h2 class="text-xl font-semibold mb-4">播放器 ${index + 1}</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="songName-${index}" class="block text-sm font-medium mb-1 text-gray-300">歌曲名称 / Song Name</label>
+                            <input type="text" id="songName-${index}" value="${player.songName}" class="w-full px-3 py-2 bg-gray-600 rounded-md border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                        </div>
+                        <div>
+                            <label for="artist-${index}" class="block text-sm font-medium mb-1 text-gray-300">艺术家 / Artist</label>
+                            <input type="text" id="artist-${index}" value="${player.artist}" class="w-full px-3 py-2 bg-gray-600 rounded-md border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="mp3Url-${index}" class="block text-sm font-medium mb-1 text-gray-300">MP3 URL</label>
+                        <input type="text" id="mp3Url-${index}" value="${player.mp3Url}" class="w-full px-3 py-2 bg-gray-600 rounded-md border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="coverUrl-${index}" class="block text-sm font-medium mb-1 text-gray-300">封面图片 URL / Cover URL</label>
+                        <input type="text" id="coverUrl-${index}" value="${player.coverUrl}" class="w-full px-3 py-2 bg-gray-600 rounded-md border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2 text-gray-300">歌词类型 / Lyric Type</label>
+                        <div class="flex space-x-4">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="lrcType-${index}" value="url" ${player.lrcType === 'url' ? 'checked' : ''} class="form-radio text-blue-500">
+                                <span class="ml-2 text-gray-300">URL</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="lrcType-${index}" value="text" ${player.lrcType === 'text' ? 'checked' : ''} class="form-radio text-blue-500">
+                                <span class="ml-2 text-gray-300">手动输入 / Input manually</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 lrc-content">
+                        <label for="lrcContent-${index}" class="block text-sm font-medium mb-1 text-gray-300">
+                            ${player.lrcType === 'url' ? '歌词 URL' : '歌词内容 / Lyric Contents'}
+                        </label>
+                        ${player.lrcType === 'url' 
+                            ? `<input type="text" id="lrcContent-${index}" value="${player.lrcContent}" class="w-full px-3 py-2 bg-gray-600 rounded-md border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">`
+                            : `<textarea id="lrcContent-${index}" rows="5" class="w-full px-3 py-2 bg-gray-600 rounded-md border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">${player.lrcContent}</textarea>`
+                        }
+                    </div>
+
+                    ${index > 0 ? `
+                        <button class="delete-player absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                            删除
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // 修正后的 correctLyrics 函数
+        function correctLyrics(lyrics) {
+            const lines = lyrics.split('\n');
+            let correctionCount = 0;
+            const correctedLines = lines.map(line => {
+                if (line.trim() === '') return line;
+                // 调整后的正则表达式，允许任意位数的毫秒数
+                const hasTimestamp = /\[\d{2}:\d{2}\.\d+\]/.test(line);
+                // 替换行中所有时间标签，确保毫秒为三位数
+                let correctedLine = line.replace(/\[(\d{2}):(\d{2})\.(\d+)\]/g, (match, min, sec, ms) => {
+                    // 保留前三位毫秒数，不足三位则补零
+                    let paddedMs = ms.padEnd(3, '0').slice(0, 3);
+                    if (ms !== paddedMs) {
+                        correctionCount++;
+                    }
+                    return `[${min}:${sec}.${paddedMs}]`;
+                });
+                // 如果没有时间标签，则添加默认时间标签
+                if (!hasTimestamp) {
+                    correctedLine = `[00:00.000]${correctedLine}`;
+                    correctionCount++;
                 }
+                return correctedLine;
             });
+            return { correctedLyrics: correctedLines.join('\n'), correctionCount };
+        }
+
+        function renderPlayers() {
+            const container = document.getElementById('players-container');
+            container.innerHTML = players.map((player, index) => createPlayerHTML(player, index)).join('');
+
+            // 添加事件监听器
+            players.forEach((player, index) => {
+                const playerElement = container.querySelector(`[data-player-id="${player.id}"]`);
+                
+                // 歌词类型切换
+                const lrcTypeRadios = playerElement.querySelectorAll(`input[name="lrcType-${index}"]`);
+                lrcTypeRadios.forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        player.lrcType = e.target.value;
+                        const lrcContentContainer = playerElement.querySelector('.lrc-content');
+                        lrcContentContainer.innerHTML = `
+                            <label for="lrcContent-${index}" class="block text-sm font-medium mb-1 text-gray-300">
+                                ${player.lrcType === 'url' ? '歌词 URL' : '歌词内容 / Lyric Contents'}
+                            </label>
+                            ${player.lrcType === 'url' 
+                                ? `<input type="text" id="lrcContent-${index}" value="${player.lrcContent}" class="w-full px-3 py-2 bg-gray-600 rounded-md border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">`
+                                : `<textarea id="lrcContent-${index}" rows="5" class="w-full px-3 py-2 bg-gray-600 rounded-md border border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">${player.lrcContent}</textarea>`
+                            }
+                        `;
+                        if (player.lrcType === 'text') {
+                            toastr.info('在文本区域失去焦点时，歌词时间标签将自动校正。', '提示');
+                        }
+                        addLyricsListener(playerElement, index);
+                    });
+                });
+
+                // 删除按钮
+                if (index > 0) {
+                    const deleteButton = playerElement.querySelector('.delete-player');
+                    deleteButton.addEventListener('click', () => {
+                        const hasContent = Object.values(player).some(value => value !== '' && value !== 'url');
+                        if (hasContent) {
+                            if (confirm('确定要删除这个播放器配置吗？此操作不可撤销。')) {
+                                players.splice(index, 1);
+                                renderPlayers();
+                                toastr.success('播放器已删除。', '删除成功');
+                            }
+                        } else {
+                            players.splice(index, 1);
+                            renderPlayers();
+                            toastr.success('播放器已删除。', '删除成功');
+                        }
+                    });
+                }
+
+                // 输入字段更新
+                ['songName', 'artist', 'mp3Url', 'coverUrl'].forEach(field => {
+                    const input = playerElement.querySelector(`#${field}-${index}`);
+                    input.addEventListener('input', (e) => {
+                        player[field] = e.target.value;
+                    });
+                });
+
+                addLyricsListener(playerElement, index);
+            });
+        }
+
+        function addLyricsListener(playerElement, index) {
+            const lrcContentInput = playerElement.querySelector(`#lrcContent-${index}`);
+            if (lrcContentInput) {
+                lrcContentInput.addEventListener('blur', () => {
+                    if (players[index].lrcType === 'text') {
+                        const { correctedLyrics, correctionCount } = correctLyrics(lrcContentInput.value);
+                        lrcContentInput.value = correctedLyrics;
+                        players[index].lrcContent = correctedLyrics;
+                        if (correctionCount > 0) {
+                            toastr.success(`已修复 ${correctionCount} 处歌词时间戳错误。`, '歌词修正');
+                        }
+                    } else {
+                        players[index].lrcContent = lrcContentInput.value;
+                    }
+                });
+            }
+        }
+
+        // 添加播放器按钮（新增的小“+”按钮）
+        document.getElementById('add-player').addEventListener('click', () => {
+            players.push({ id: `aplayer${players.length + 1}`, songName: '', artist: '', mp3Url: '', coverUrl: '', lrcType: 'url', lrcContent: '' });
+            renderPlayers();
+            toastr.success('已添加一个新的播放器。', '成功');
         });
 
-        generateBtn.addEventListener('click', () => {
-            const songName = document.getElementById('songName').value;
-            const artist = document.getElementById('artist').value;
-            const mp3Url = document.getElementById('mp3Url').value;
-            const coverUrl = document.getElementById('coverUrl').value;
-            const lrcType = document.querySelector('input[name="lrcType"]:checked').value;
-            const lrcContent = lrcType === 'url' ? document.getElementById('lrcUrl').value : document.getElementById('lrcText').value;
-
-            if (songName && artist && mp3Url && coverUrl && (lrcType === 'url' ? lrcContent : true)) {
-                const lrcTypeNumber = lrcType === 'url' ? 3 : 1;
-                let lrcValue, correctionCount;
-                if (lrcType === 'url') {
-                    lrcValue = lrcContent;
-                    correctionCount = 0;
-                } else {
-                    [lrcValue, correctionCount] = validateAndCorrectLRC(lrcContent);
-                }
-                
-                const code = `<meta charset="UTF-8">
-<div id="aplayer"></div>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
-<script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"><\/script>
-<script>
-  // 初始化播放器
-  const ap = new APlayer({
-    container: document.getElementById('aplayer'), // 播放器容器
-    audio: [
-      {
-        name: '${songName}', // 歌曲名称
-        artist: '${artist}', // 艺术家名称
-        url: '${mp3Url}', // MP3 文件的 URL
-        cover: '${coverUrl}', // 封面图片的 URL
-        lrc: \`${lrcValue}\` // 嵌入式歌词内容
-      }
-    ],
-    lrcType: ${lrcTypeNumber} // LRC 歌词支持 (0: 关闭, 1: 内嵌, 3: 外链)，根据用户选择
-  });
-<\/script>`;
-                
-                embedCodeTextarea.value = code;
-                embedCodeContainer.classList.remove('hidden');
-                
-                if (correctionCount > 0) {
-                    lrcCorrectionInfo.textContent = `已为您修复 ${correctionCount} 处时间戳错误 / Fixed timestamp error at ${correctionCount} for you`;
-                    lrcCorrectionInfo.classList.remove('hidden');
-                } else {
-                    lrcCorrectionInfo.classList.add('hidden');
-                }
-                
-                navigator.clipboard.writeText(code).then(() => {
-                    alert('嵌入代码已复制到剪贴板 / Copied!');
-                }, (err) => {
-                    console.error('无法复制文本 / Unable to Copy: ', err);
-                    alert('无法自动复制代码，请手动复制嵌入代码 / Unable to copy the code automatically, copy the embedded code manually');
-                });
+        document.getElementById('cdn-source').addEventListener('change', (e) => {
+            const customCdnContainer = document.getElementById('custom-cdn-container');
+            if (e.target.value === 'custom') {
+                customCdnContainer.classList.remove('hidden');
             } else {
-                alert('请填写所有必要的字段 / Please fill in all necessary fields');
+                customCdnContainer.classList.add('hidden');
             }
         });
 
-        function validateAndCorrectLRC(lrcContent) {
-            const lines = lrcContent.split('\n');
-            let correctionCount = 0;
-            const correctedLines = lines.map(line => {
-                const match = line.match(/^\[(\d{2}):(\d{2})\.(\d{1,4})\]/);
-                if (match) {
-                    const [, minutes, seconds, milliseconds] = match;
-                    const correctedMs = milliseconds.padEnd(2, '0').slice(0, 2);
-                    if (correctedMs !== milliseconds) {
-                        correctionCount++;
-                    }
-                    return `[${minutes}:${seconds}.${correctedMs}]${line.slice(match[0].length)}`;
-                }
-                return line;
-            });
-            
-            // Add the timestamp at the beginning
-            correctedLines.unshift('[00:00.01]By Dos7t3r | 417.red');
-            correctionCount++; // Count the added line as a correction
-            
-            return [correctedLines.join('\n'), correctionCount];
+        document.getElementById('generate-code').addEventListener('click', () => {
+            const cdnSource = document.getElementById('cdn-source').value;
+            const customCdn = document.getElementById('custom-cdn').value;
+
+            let cdnUrl;
+            switch (cdnSource) {
+                case 'jsdelivr':
+                    cdnUrl = 'https://cdn.jsdelivr.net/npm/aplayer/dist';
+                    break;
+                case 'cdnjs':
+                    cdnUrl = 'https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1';
+                    break;
+                case 'unpkg':
+                    cdnUrl = 'https://unpkg.com/aplayer/dist';
+                    break;
+                case 'custom':
+                    cdnUrl = customCdn;
+                    break;
+                default:
+                    cdnUrl = 'https://cdn.jsdelivr.net/npm/aplayer/dist';
+            }
+
+            // 已移除修正数量的累加逻辑
+
+            const playerCodes = players.map(player => `
+<div id="${player.id}"></div>
+<script>
+(function() {
+  const container = document.getElementById('${player.id}');
+  const shadow = container.attachShadow({mode: 'open'});
+  
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = '${cdnUrl}/APlayer.min.css';
+  shadow.appendChild(link);
+  
+  const playerDiv = document.createElement('div');
+  playerDiv.id = '${player.id}-inner';
+  shadow.appendChild(playerDiv);
+  
+  const script = document.createElement('script');
+  script.src = '${cdnUrl}/APlayer.min.js';
+  script.onload = function() {
+    const ap_${player.id.replace(/-/g, '_')} = new APlayer({
+      container: playerDiv,
+      audio: [
+        {
+          name: '${player.songName}',
+          artist: '${player.artist}',
+          url: '${player.mp3Url}',
+          cover: '${player.coverUrl}',
+          lrc: \`${player.lrcContent}\`
         }
+      ],
+      lrcType: ${player.lrcType === 'url' ? 3 : 1}
+    });
+  };
+  shadow.appendChild(script);
+})();
+<\/script>
+            `).join('\n');
+
+            const code = `
+<meta charset="UTF-8">
+${playerCodes}
+            `;
+
+            const embedCodeTextarea = document.getElementById('embed-code');
+            embedCodeTextarea.value = code;
+            document.getElementById('embed-code-container').classList.remove('hidden');
+            document.getElementById('copy-code').classList.remove('hidden');
+
+            // 修改后的 Toastr 成功通知
+            toastr.success('嵌入代码生成成功。', '生成成功');
+        });
+
+        document.getElementById('copy-code').addEventListener('click', () => {
+            const embedCode = document.getElementById('embed-code').value;
+            navigator.clipboard.writeText(embedCode).then(() => {
+                toastr.success('嵌入代码已复制到剪贴板。', '复制成功');
+            }, (err) => {
+                console.error('无法复制文本 / Unable to copy text: ', err);
+                toastr.error('无法自动复制代码，请手动复制嵌入代码。', '复制失败');
+            });
+        });
+
+        // 初始化渲染播放器
+        renderPlayers();
     </script>
+</body>
+</html>
