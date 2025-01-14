@@ -17,7 +17,7 @@
 ---------
 
 # A simple Aplayer embed configuration generator
-## Current version：v3.24 (20250114)
+## Current version：v3.4 (20250114)
 
 Aplayer-based embedded code generator tool.
 Allow users to fill in the information related to music playback through the graphical interface, and generate a piece of HTML code that can be embedded in the web page, so as to achieve the function of calling Aplayer to insert music player in WordPress.
