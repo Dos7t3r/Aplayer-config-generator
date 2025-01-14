@@ -1,7 +1,11 @@
 # 一个简单的Aplayer嵌入配置生成器
 ## 当前版本：v3.21 (20250113)
+ 由于本人的需求是通过iframe嵌入到其他的html页面中，因此仅使用html+js实现这个功能。
+ 
  基于 APlayer 的嵌入代码生成器工具。
  允许用户通过图形界面填写音乐播放相关的信息，并生成一段可嵌入网页的HTML代码，从而实现调用Aplayer在WordPress中插入音乐播放器的功能。
+
+
  
  详细介绍 👉🏻 https://blog.iambzy.com/p/4107 👈 <br>
  在线Demo 👉🏻 https://blog.iambzy.com/Aplayer-generator 👈
